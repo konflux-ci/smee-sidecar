@@ -1,5 +1,5 @@
 # Stage 1: Build the Go binary
-FROM registry.access.redhat.com/ubi9/go-toolset:9.6-1762373805 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset:9.7-1762230058 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 
