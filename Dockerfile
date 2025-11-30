@@ -35,6 +35,11 @@ LABEL description="Smee health check Sidecar"
 LABEL com.redhat.component="Smee health check Sidecar"
 LABEL io.k8s.description="Smee health check Sidecar"
 LABEL io.k8s.display-name="smee-sidecar"
+LABEL version="1.0"
+LABEL release="1"
+LABEL vendor="Red Hat, Inc."
+LABEL distribution-scope="public"
+LABEL url="https://github.com/konflux-ci/smee-sidecar"
 
 # Set the entrypoint for the container
 ENTRYPOINT ["/smee-sidecar"]
