@@ -21,8 +21,16 @@ jobs:
         with:
           go-version: '1.23'
 
-      - name: Run unit tests serially
-        run: go test -p 1 ./... -v
+      - name: Run unit tests serially with coverage
+        run: go test -p 1 -coverprofile=coverage.out -covermode=atomic ./... -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unit-tests
+          files: coverage.out
+          fail_ci_if_error: false
 
       - name: Test health check scripts
         run: |
