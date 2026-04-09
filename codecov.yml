@@ -7,6 +7,10 @@ coverage:
       default:
         target: auto
 
+# cmd/main.go is entrypoint-only (see app.go for logic). Startup wiring is exercised by Kind system tests.
+ignore:
+  - cmd/main.go
+
 flags:
   unit-tests:
     paths:

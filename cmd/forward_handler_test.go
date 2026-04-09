@@ -200,6 +200,40 @@ var _ = Describe("forwardHandler", func() {
 			Expect(testutil.ToFloat64(forwardAttempts)).To(Equal(0.0))
 		})
 
+		It("should not block when health check channel buffer is already full", func() {
+			testID := "full-buffer-health-check"
+
+			resultChan := make(chan bool, 1)
+			resultChan <- true // fill buffer so handler hits select's default branch
+			mutex.Lock()
+			healthChecks[testID] = resultChan
+			mutex.Unlock()
+
+			payload := fmt.Sprintf(`{"type": "health-check", "id": "%s"}`, testID)
+			request, err := http.NewRequest("POST", "/", bytes.NewBufferString(payload))
+			Expect(err).NotTo(HaveOccurred())
+			request.Header.Set("X-Health-Check-ID", testID)
+			request.Header.Set("Content-Type", "application/json")
+
+			forwardHandler(recorder, request)
+
+			Expect(recorder.Code).To(Equal(http.StatusOK))
+
+			// Still only the pre-filled value; handler did not add another (default branch)
+			Expect(resultChan).To(HaveLen(1))
+			Expect(resultChan).To(Receive(Equal(true)))
+			Expect(resultChan).To(BeEmpty())
+
+			mutex.Lock()
+			delete(healthChecks, testID)
+			mutex.Unlock()
+
+			requestMutex.Lock()
+			Expect(len(downstreamRequests)).To(Equal(0))
+			requestMutex.Unlock()
+			Expect(testutil.ToFloat64(forwardAttempts)).To(Equal(0.0))
+		})
+
 		It("should handle health check events when no channel is waiting", func() {
 			testID := "unknown-health-check-456"
 

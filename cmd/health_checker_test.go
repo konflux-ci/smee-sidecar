@@ -107,6 +107,21 @@ var _ = Describe("Health Checker", func() {
 			_, err = os.Stat(tempFile)
 			Expect(os.IsNotExist(err)).To(BeTrue())
 		})
+
+		It("should return an error when rename to final path fails", func() {
+			// Final path is an existing directory; rename(file.tmp, dir) fails on Unix (ENOTDIR/EISDIR).
+			dirAsHealthPath := filepath.Join(tempDir, "health-status.txt")
+			Expect(os.Mkdir(dirAsHealthPath, 0755)).To(Succeed())
+
+			status := &HealthStatus{Status: "success", Message: "x"}
+			err := writeHealthStatus(status, dirAsHealthPath)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("failed to rename temp file"))
+
+			tmpPath := dirAsHealthPath + ".tmp"
+			_ = os.Remove(tmpPath)
+			Expect(os.RemoveAll(dirAsHealthPath)).To(Succeed())
+		})
 	})
 
 	Describe("writeScriptsToVolume", func() {
