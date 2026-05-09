@@ -13,12 +13,12 @@ COPY go.sum go.sum
 # much and so that source changes don't invalidate our downloaded layer
 RUN go mod download
 
-# Copy the rest of the source code
-COPY cmd/main.go cmd/main.go
+# Copy the rest of the source code (package main: all non-test .go files under cmd/)
+COPY cmd/main.go cmd/app.go cmd/
 COPY cmd/scripts/ cmd/scripts/
 
-# Build the binary with flags for a small, static executable
-RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o /opt/app-root/smee-sidecar cmd/main.go
+# Build the package under cmd/ (single-file `go build cmd/main.go` omits app.go and breaks the split layout)
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o /opt/app-root/smee-sidecar ./cmd
 
 # Stage 2: Create the final, minimal image
 FROM registry.access.redhat.com/ubi9-minimal@sha256:b9b10f42d7eba7ad4a6d5ef26b7d34fdc892b2ffe59b8d0372ec884008569eb6
