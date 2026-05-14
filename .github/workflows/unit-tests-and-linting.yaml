@@ -1,4 +1,4 @@
-name: Go CI
+name: Unit Tests & Linting
 
 on:
   push:
@@ -35,3 +35,13 @@ jobs:
       - name: Test health check scripts
         run: |
           test/scripts/test-health-scripts.sh
+
+      - name: Validate AGENTS.md line count
+        run: |
+          MAX_LINES=60
+          ACTUAL_LINES=$(wc -l < AGENTS.md)
+          if [ "$ACTUAL_LINES" -gt "$MAX_LINES" ]; then
+            echo "::error::AGENTS.md has $ACTUAL_LINES lines, exceeding the $MAX_LINES line limit"
+            exit 1
+          fi
+          echo "AGENTS.md has $ACTUAL_LINES lines (limit: $MAX_LINES)"
