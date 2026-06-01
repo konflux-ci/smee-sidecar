@@ -47,6 +47,17 @@ Optional: `HEALTH_CHECK_INTERVAL_SECONDS` (default 30),
 `HEALTH_CHECK_TIMEOUT_SECONDS` (default 20), `SHARED_VOLUME_PATH` (default /shared),
 `HEALTH_FILE_PATH`, `INSECURE_SKIP_VERIFY`, `ENABLE_PPROF`
 
+## AI Skills
+
+Repo-specific skills live in `skills/`, symlinked for Claude Code (`.claude/skills`) and Cursor (`.cursor/skills`).
+
+| Skill | Use when |
+|-------|----------|
+| [ci-quirks](skills/ci-quirks/SKILL.md) | CI pipelines fail unexpectedly, adding CI-visible files, checking merge-blocking checks |
+| [debug-instance](skills/debug-instance/SKILL.md) | A running pod is unhealthy, restarting, not relaying events, or showing unexpected metrics |
+| [kind-cluster](skills/kind-cluster/SKILL.md) | Setting up, running, or tearing down a Kind cluster for system tests |
+| [add-probe-script](skills/add-probe-script/SKILL.md) | Adding, modifying, or removing embedded probe scripts in `cmd/scripts/` |
+
 ## Conventions
 
 - All Go code is in the `cmd/` directory with `package main`
