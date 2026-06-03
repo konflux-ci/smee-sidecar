@@ -62,7 +62,7 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			// Sleep for 5 seconds to simulate slow pipelines-as-code processing
 			time.Sleep(5 * time.Second)
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("slow downstream response"))
+			_, _ = w.Write([]byte("slow downstream response"))
 		}))
 
 		// Set the global downstream URL to our slow test server
@@ -88,10 +88,10 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			slowDownstream.Close()
 		}
 		if testServer != nil {
-			testServer.Close()
+			_ = testServer.Close()
 		}
 		if testListener != nil {
-			testListener.Close()
+			_ = testListener.Close()
 		}
 
 		// Reset proxy instance
@@ -113,7 +113,7 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			go func() {
-				testServer.Serve(testListener)
+				_ = testServer.Serve(testListener)
 			}()
 
 			serverURL := fmt.Sprintf("http://%s", testListener.Addr().String())
@@ -121,7 +121,8 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			// Count initial stuck HTTP goroutines (should be 0)
 			initialStuckGoroutines := countStuckHTTPGoroutines()
 			totalInitialGoroutines := runtime.NumGoroutine()
-			fmt.Printf("Initial stuck HTTP goroutines: %d (total: %d)\n", initialStuckGoroutines, totalInitialGoroutines)
+			fmt.Printf("Initial stuck HTTP goroutines: %d (total: %d)\n",
+				initialStuckGoroutines, totalInitialGoroutines)
 
 			// Create multiple clients that timeout quickly
 			numClients := 5
@@ -150,7 +151,7 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 						return
 					}
 					if resp != nil {
-						resp.Body.Close()
+						_ = resp.Body.Close()
 					}
 				}(i)
 			}
@@ -168,8 +169,14 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			stuckGoroutineIncrease := afterTimeoutStuckGoroutines - initialStuckGoroutines
 			totalGoroutineIncrease := totalAfterTimeoutGoroutines - totalInitialGoroutines
 
-			fmt.Printf("After client timeouts - stuck HTTP goroutines: %d (total: %d)\n", afterTimeoutStuckGoroutines, totalAfterTimeoutGoroutines)
-			fmt.Printf("Stuck HTTP goroutine increase: %d (total increase: %d)\n", stuckGoroutineIncrease, totalGoroutineIncrease)
+			fmt.Printf(
+				"After client timeouts - stuck HTTP goroutines: %d (total: %d)\n",
+				afterTimeoutStuckGoroutines, totalAfterTimeoutGoroutines,
+			)
+			fmt.Printf(
+				"Stuck HTTP goroutine increase: %d (total increase: %d)\n",
+				stuckGoroutineIncrease, totalGoroutineIncrease,
+			)
 
 			// With the original bug, we should see stuck HTTP goroutines accumulate
 			Expect(stuckGoroutineIncrease).To(BeNumerically(">=", 1),
@@ -194,7 +201,7 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			go func() {
-				testServer.Serve(testListener)
+				_ = testServer.Serve(testListener)
 			}()
 
 			serverURL := fmt.Sprintf("http://%s", testListener.Addr().String())
@@ -202,7 +209,8 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			// Count initial stuck HTTP goroutines (should be 0)
 			initialStuckGoroutines := countStuckHTTPGoroutines()
 			totalInitialGoroutines := runtime.NumGoroutine()
-			fmt.Printf("Initial stuck HTTP goroutines: %d (total: %d)\n", initialStuckGoroutines, totalInitialGoroutines)
+			fmt.Printf("Initial stuck HTTP goroutines: %d (total: %d)\n",
+				initialStuckGoroutines, totalInitialGoroutines)
 
 			// Create multiple clients that timeout quickly (simulating GitHub webhook timeouts)
 			numClients := 5
@@ -231,7 +239,7 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 						return
 					}
 					if resp != nil {
-						resp.Body.Close()
+						_ = resp.Body.Close()
 					}
 				}(i)
 			}
@@ -247,7 +255,10 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			totalAfterClientTimeouts := runtime.NumGoroutine()
 			clientTimeoutStuckIncrease := afterClientTimeoutsStuckGoroutines - initialStuckGoroutines
 
-			fmt.Printf("After client timeouts - stuck HTTP goroutines: %d (total: %d)\n", afterClientTimeoutsStuckGoroutines, totalAfterClientTimeouts)
+			fmt.Printf(
+				"After client timeouts - stuck HTTP goroutines: %d (total: %d)\n",
+				afterClientTimeoutsStuckGoroutines, totalAfterClientTimeouts,
+			)
 			fmt.Printf("Stuck HTTP goroutine increase after client timeouts: %d\n", clientTimeoutStuckIncrease)
 
 			// Now wait for server ReadTimeout to trigger cleanup (3 seconds + buffer)
@@ -259,7 +270,10 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 			totalAfterServerTimeout := runtime.NumGoroutine()
 			finalStuckIncrease := afterServerTimeoutStuckGoroutines - initialStuckGoroutines
 
-			fmt.Printf("After server timeout cleanup - stuck HTTP goroutines: %d (total: %d)\n", afterServerTimeoutStuckGoroutines, totalAfterServerTimeout)
+			fmt.Printf(
+				"After server timeout cleanup - stuck HTTP goroutines: %d (total: %d)\n",
+				afterServerTimeoutStuckGoroutines, totalAfterServerTimeout,
+			)
 			fmt.Printf("Final stuck HTTP goroutine increase: %d\n", finalStuckIncrease)
 
 			// The key test: server timeouts should reduce stuck HTTP goroutine count
@@ -276,7 +290,10 @@ var _ = Describe("Staging Goroutine Accumulation Issue", func() {
 					"Server timeouts should reduce stuck HTTP goroutine accumulation")
 			}
 
-			fmt.Printf("✅ Recovery demonstrated: server timeouts cleaned up %d stuck HTTP goroutines\n", stuckGoroutinesRecovered)
+			fmt.Printf(
+				"✅ Recovery demonstrated: server timeouts cleaned up %d stuck HTTP goroutines\n",
+				stuckGoroutinesRecovered,
+			)
 		})
 	})
 })

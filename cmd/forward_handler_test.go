@@ -38,7 +38,7 @@ var _ = Describe("forwardHandler", func() {
 			downstreamRequests = append(downstreamRequests, r)
 			requestMutex.Unlock()
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("downstream response"))
+			_, _ = w.Write([]byte("downstream response"))
 		}))
 
 		// Set the global downstream service URL for per-request proxy creation
@@ -85,7 +85,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify the request was forwarded to downstream
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(1))
+			Expect(downstreamRequests).To(HaveLen(1))
 			requestMutex.Unlock()
 
 			// Verify the counter was incremented
@@ -109,7 +109,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify the request was forwarded to downstream
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(1))
+			Expect(downstreamRequests).To(HaveLen(1))
 			requestMutex.Unlock()
 
 			// Verify the counter was incremented
@@ -129,7 +129,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify the request was forwarded to downstream
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(1))
+			Expect(downstreamRequests).To(HaveLen(1))
 			requestMutex.Unlock()
 
 			// Verify the counter was incremented
@@ -149,7 +149,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify the request was forwarded to downstream
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(1))
+			Expect(downstreamRequests).To(HaveLen(1))
 			requestMutex.Unlock()
 
 			// Verify the counter was incremented
@@ -193,7 +193,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify no downstream request was made
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(0))
+			Expect(downstreamRequests).To(BeEmpty())
 			requestMutex.Unlock()
 
 			// Verify the counter was NOT incremented (health checks don't count as regular events)
@@ -217,7 +217,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify no downstream request was made
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(0))
+			Expect(downstreamRequests).To(BeEmpty())
 			requestMutex.Unlock()
 
 			// Verify the counter was NOT incremented
@@ -240,7 +240,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify the request was forwarded to downstream
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(1))
+			Expect(downstreamRequests).To(HaveLen(1))
 			requestMutex.Unlock()
 
 			// Verify the counter was incremented
@@ -262,7 +262,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify the request was forwarded to downstream
 			requestMutex.Lock()
-			Expect(len(downstreamRequests)).To(Equal(1))
+			Expect(downstreamRequests).To(HaveLen(1))
 			requestMutex.Unlock()
 
 			// Verify the counter was incremented
@@ -338,7 +338,7 @@ var _ = Describe("forwardHandler", func() {
 
 			// Verify all health checks are still in the map (cleanup happens in performHealthCheck, not forwardHandler)
 			mutex.Lock()
-			Expect(len(healthChecks)).To(Equal(numRequests))
+			Expect(healthChecks).To(HaveLen(numRequests))
 			// Clean up for the test
 			for _, testID := range testIDs {
 				delete(healthChecks, testID)
@@ -391,7 +391,7 @@ func TestForwardHandler_NonHealthCheckRequest(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, _ = w.Write([]byte("ok"))
 	}))
 	defer downstreamServer.Close()
 
@@ -453,7 +453,7 @@ func measureConnectionBehaviorWithHealthChecks(serverURL string, requestCount in
 		if err != nil {
 			continue
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 
 		// Brief pause to ensure connections are properly handled
 		time.Sleep(10 * time.Millisecond)

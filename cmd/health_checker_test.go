@@ -47,7 +47,7 @@ var _ = Describe("Health Checker", func() {
 		if mockServer != nil {
 			mockServer.Close()
 		}
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	Describe("writeHealthStatus", func() {

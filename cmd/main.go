@@ -80,7 +80,8 @@ type HealthCheckPayload struct {
 func createOptimizedTransport() *http.Transport {
 	return &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: "true" == os.Getenv("INSECURE_SKIP_VERIFY"),
+			//nolint:gosec // G402: INSECURE_SKIP_VERIFY is an explicit operator opt-in for health checks
+			InsecureSkipVerify: os.Getenv("INSECURE_SKIP_VERIFY") == "true",
 		},
 		DisableKeepAlives:     false,
 		MaxIdleConns:          10,
@@ -159,7 +160,9 @@ func forwardHandler(w http.ResponseWriter, r *http.Request) {
 	proxy.ServeHTTP(w, r)
 }
 
-// writeScriptsToVolume writes the embedded probe scripts to the shared volume
+// writeScriptsToVolume writes the embedded probe scripts to the shared volume.
+//
+//nolint:gosec // G302,G306,G703,G706: probe scripts need executable perms; paths use fixed filenames under sharedPath
 func writeScriptsToVolume(sharedPath string) error {
 	scripts := map[string][]byte{
 		"check-smee-health.sh":    smeeHealthScript,
@@ -192,7 +195,9 @@ func writeScriptsToVolume(sharedPath string) error {
 	return nil
 }
 
-// writeHealthStatus writes health status to file atomically
+// writeHealthStatus writes health status to file atomically.
+//
+//nolint:gosec // G306,G703: atomic health status write to operator-configured HEALTH_FILE_PATH
 func writeHealthStatus(status *HealthStatus, filePath string) error {
 	// Simple format with only fields used by probe scripts
 	content := fmt.Sprintf("status=%s\nmessage=%s\n",
@@ -213,7 +218,9 @@ func writeHealthStatus(status *HealthStatus, filePath string) error {
 	return nil
 }
 
-// performHealthCheck executes a single end-to-end health check
+// performHealthCheck executes a single end-to-end health check.
+//
+//nolint:gosec // G704: intentional POST to operator-configured SMEE_CHANNEL_URL
 func performHealthCheck(smeeChannelURL string, timeoutSeconds int) *HealthStatus {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
@@ -268,7 +275,7 @@ func performHealthCheck(smeeChannelURL string, timeoutSeconds int) *HealthStatus
 		if resp != nil && resp.Body != nil {
 			// Drain and close the body to ensure resources are freed
 			_, _ = io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 	}()
 
@@ -355,7 +362,7 @@ func main() {
 	}
 
 	// Check if pprof endpoints should be enabled (disabled by default for security)
-	enablePprof := "true" == os.Getenv("ENABLE_PPROF")
+	enablePprof := os.Getenv("ENABLE_PPROF") == "true"
 
 	// HTTP clients will be initialized lazily when first needed
 
@@ -419,13 +426,23 @@ func main() {
 		log.Println("pprof endpoints disabled (set ENABLE_PPROF=true to enable)")
 	}
 
+	// WriteTimeout must exceed pprof CPU profile duration (default 30s) plus response overhead.
+	mgmtServer := &http.Server{
+		Addr:              ":9100",
+		Handler:           mgmtMux,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      65 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+
 	go func() {
 		if enablePprof {
 			log.Println("Management server (metrics & pprof) listening on :9100")
 		} else {
 			log.Println("Management server (metrics) listening on :9100")
 		}
-		if err := http.ListenAndServe(":9100", mgmtMux); err != nil {
+		if err := mgmtServer.ListenAndServe(); err != nil {
 			log.Fatalf("FATAL: Management server failed: %v", err)
 		}
 	}()
