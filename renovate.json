@@ -1,6 +1,17 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "prConcurrentLimit": 0,
+    "customManagers": [
+        {
+            "description": "Track golangci-lint version for CI go-lint. File is version-only; golangci-lint-action does not support extra lines.",
+            "customType": "regex",
+            "fileMatch": ["^\\.golangci-lint-version$"],
+            "matchStrings": ["^(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s*$"],
+            "datasourceTemplate": "github-releases",
+            "depNameTemplate": "golangci/golangci-lint",
+            "extractVersionTemplate": "^v?(?<version>.*)$"
+        }
+    ],
     "kubernetes": {
         "managerFilePatterns": [
             "/^test/config/.*\\.ya?ml$/"

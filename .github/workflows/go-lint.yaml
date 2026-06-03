@@ -1,0 +1,51 @@
+name: Go Lint
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+jobs:
+  check-changes:
+    name: Check for relevant changes
+    runs-on: ubuntu-slim
+    outputs:
+      go: ${{ steps.changed-files.outputs.any_changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Check for changes
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
+        id: changed-files
+        with:
+          files: |
+            **/*.go
+            go.mod
+            go.sum
+            .golangci.yml
+            .golangci-lint-version
+            .github/workflows/go-lint.yaml
+
+  lint:
+    name: Run Go Lint
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.go == 'true'
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
+        with:
+          version-file: .golangci-lint-version
