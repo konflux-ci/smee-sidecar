@@ -9,7 +9,8 @@
             "matchStrings": ["^(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s*$"],
             "datasourceTemplate": "github-releases",
             "depNameTemplate": "golangci/golangci-lint",
-            "extractVersionTemplate": "^v?(?<version>.*)$"
+            "extractVersionTemplate": "^v?(?<version>.*)$",
+            "autoReplaceStringTemplate": "v{{{newValue}}}"
         }
     ],
     "kubernetes": {
