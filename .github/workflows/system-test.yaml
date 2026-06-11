@@ -2,9 +2,9 @@ name: System Test on Kind
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   merge_group:
     types: [checks_requested]
 
