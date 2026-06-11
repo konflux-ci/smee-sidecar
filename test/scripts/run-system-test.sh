@@ -223,7 +223,7 @@ MAX_ATTEMPTS=30 # 30 attempts * 5s sleep = 150s timeout
 while true; do
   # It's possible for the pod name to change if the pod gets recreated, so we fetch it again.
   SIDECAR_POD_NAME=$(kubectl get pods -l ${SIDECAR_POD_LABEL} -o jsonpath='{.items[0].metadata.name}')
-  CURRENT_RESTARTS=$(kubectl get pod ${SIDECAR_POD_NAME} -o jsonpath='{.status.containerStatuses[0].restartCount}')
+  CURRENT_RESTARTS=$(kubectl get pod "${SIDECAR_POD_NAME}" -o jsonpath='{.status.containerStatuses[0].restartCount}')
   if [ "${CURRENT_RESTARTS}" -ge "1" ]; then
     echo "Success: Sidecar has restarted. Current count: ${CURRENT_RESTARTS}."
     break
@@ -233,7 +233,7 @@ while true; do
     echo "Error: Timed out waiting for sidecar to restart."
     echo "Final restart count: ${CURRENT_RESTARTS}"
     # Debug: show recent events and pod status
-    kubectl describe pod ${SIDECAR_POD_NAME}
+    kubectl describe pod "${SIDECAR_POD_NAME}"
     exit 1
   fi
   echo "Current restart count is ${CURRENT_RESTARTS}. Waiting..."
@@ -277,10 +277,10 @@ kubectl wait --for=condition=Available ${SIDECAR_DEPLOYMENT} --timeout=60s
 
 # Get the latest pod name and restart count after recovery.
 SIDECAR_POD_NAME=$(kubectl get pods -l ${SIDECAR_POD_LABEL} -o jsonpath='{.items[0].metadata.name}')
-RESTARTS_AFTER_RECOVERY=$(kubectl get pod ${SIDECAR_POD_NAME} -o jsonpath='{.status.containerStatuses[0].restartCount}')
+RESTARTS_AFTER_RECOVERY=$(kubectl get pod "${SIDECAR_POD_NAME}" -o jsonpath='{.status.containerStatuses[0].restartCount}')
 echo "Verifying stability. Restart count is ${RESTARTS_AFTER_RECOVERY}. Waiting 20 seconds..."
 sleep 20
-STABLE_RESTARTS=$(kubectl get pod ${SIDECAR_POD_NAME} -o jsonpath='{.status.containerStatuses[0].restartCount}')
+STABLE_RESTARTS=$(kubectl get pod "${SIDECAR_POD_NAME}" -o jsonpath='{.status.containerStatuses[0].restartCount}')
 if [ "${STABLE_RESTARTS}" -ne "${RESTARTS_AFTER_RECOVERY}" ]; then
   echo "Error: Sidecar is unstable. Restart count increased from ${RESTARTS_AFTER_RECOVERY} to ${STABLE_RESTARTS}."
   exit 1
