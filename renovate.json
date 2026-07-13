@@ -1,13 +1,5 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "packageRules": [
-        {
-            "description": "Disable Renovate updates for indirect Go dependencies since they are resolved by go mod tidy based on direct dependency requirements",
-            "matchManagers": ["gomod"],
-            "matchDepTypes": ["indirect"],
-            "enabled": false
-        }
-    ],
     "prConcurrentLimit": 0,
     "customManagers": [
         {
@@ -21,6 +13,15 @@
             "autoReplaceStringTemplate": "v{{{newValue}}}"
         }
     ],
+    "gomod": {
+        "packageRules": [
+            {
+                "description": "Disable Renovate updates for indirect Go dependencies since they are resolved by go mod tidy based on direct dependency requirements",
+                "matchDepTypes": ["indirect"],
+                "enabled": false
+            }
+        ]
+    },
     "kubernetes": {
         "managerFilePatterns": [
             "/^test/config/.*\\.ya?ml$/"
