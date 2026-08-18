@@ -211,6 +211,14 @@ When `ENABLE_PPROF=true` is set (disabled by default), the management server exp
 pprof endpoints on `:9100/debug/pprof/` for performance profiling and debugging.
 This includes endpoints for goroutine, heap, CPU profiles, and more.
 
+## Installation
+
+Use `quay.io/konflux-ci/smee-sidecar` as a sidecar in your pod. Pin by digest (not `:latest`)
+for reproducible deploys — resolve the current digest from `quay.io/konflux-ci/smee-sidecar:latest`
+on Quay and track it with Renovate (or similar).
+Required env vars and defaults: [Configuration](#configuration).
+Full pod layout (Smee client, shared volume, probes): [Kubernetes Deployment](#kubernetes-deployment).
+
 ## Kubernetes Deployment
 
 ### Complete Example
