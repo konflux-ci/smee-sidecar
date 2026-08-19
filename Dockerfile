@@ -21,7 +21,7 @@ COPY cmd/scripts/ cmd/scripts/
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o /opt/app-root/smee-sidecar cmd/main.go
 
 # Stage 2: Create the final, minimal image
-FROM registry.access.redhat.com/ubi9-minimal@sha256:692953368d8e630f40a3c0a6135163f8824fdafc26e0400b9a6c8d7fac850366
+FROM registry.access.redhat.com/ubi9-minimal@sha256:8eb2830d0936237fc13a1f2f7e45aecf90d69043380ad167fad0343632937f41
 
 # Copy the static binary from the builder stage
 WORKDIR /
