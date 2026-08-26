@@ -40,6 +40,13 @@ podman build -t smee-sidecar:latest .
 Tests use Ginkgo v2 / Gomega. Test files are in `cmd/` alongside `main.go`.
 Tests reset global state in `BeforeEach` blocks -- do not run tests in parallel.
 
+## Single-file verification
+
+```bash
+golangci-lint run cmd/main.go
+go vet cmd/main.go
+```
+
 ## Environment Variables
 
 Required: `DOWNSTREAM_SERVICE_URL`, `SMEE_CHANNEL_URL`
