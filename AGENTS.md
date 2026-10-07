@@ -64,6 +64,7 @@ Repo-specific skills live in `skills/`, symlinked for Claude Code (`.claude/skil
 | [debug-instance](skills/debug-instance/SKILL.md) | A running pod is unhealthy, restarting, not relaying events, or showing unexpected metrics |
 | [kind-cluster](skills/kind-cluster/SKILL.md) | Setting up, running, or tearing down a Kind cluster for system tests |
 | [add-probe-script](skills/add-probe-script/SKILL.md) | Adding, modifying, or removing embedded probe scripts in `cmd/scripts/` |
+| [retro-filing-policy](skills/retro-filing-policy/SKILL.md) | Retro output (PR close or `/fs-retro`). Keep `proposals` empty unless the human comment explicitly says to file issues. |
 
 ## Conventions
 
